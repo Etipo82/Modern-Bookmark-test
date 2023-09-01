@@ -1,6 +1,8 @@
 import sqlite3
 import customtkinter
 import tkinter as tk
+from tkinter import *
+from tkinter import ttk
 import webbrowser
 
 customtkinter.set_appearance_mode("dark")
@@ -37,7 +39,7 @@ class MyEntryFrame(customtkinter.CTkFrame):
         self.submit_button.grid(row=3, column=0, padx=10, pady=10, sticky="w")
 
 
-class MySearchBox(customtkinter.CTkScrollableFrame):
+class MySearchBox(customtkinter.CTkFrame):
     def __init__(self, master, search_callback):
         super().__init__(master)
 
@@ -46,24 +48,48 @@ class MySearchBox(customtkinter.CTkScrollableFrame):
         
         self.search_button = customtkinter.CTkButton(self, text="search", command=search_callback)
         self.search_button.grid(row=1, column=0, padx=10, pady=10, sticky="e")
-        
+
+
+class ScrollableResultsFrame(customtkinter.CTkScrollableFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+
+        #self.grid_columnconfigure(0, weight=1)  # Make the inner frame expand with scrolling
+
+    def display_results(self, result):
+        # Clear any existing widgets
+        for widget in self.winfo_children():
+            widget.destroy()
+
+        # Add buttons for each search result
+        for row in result:
+            title, url, _, _ = row
+            button = customtkinter.CTkButton(self, text=title, command=lambda u=url: self.open_url(u))
+            button.pack(padx=10, pady=10, fill="x")
+
+    def open_url(self, url):
+        webbrowser.open(url)
+
 
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
         self.title("Bookmark DB")
-        self.geometry("700x550")
+        self.geometry("500x350")
         self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(2, weight=1)
-        self.grid_columnconfigure(3, weight=1)
+        #self.grid_columnconfigure(2, weight=1)
+        #self.grid_columnconfigure(3, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
         self.entry_frame = MyEntryFrame(self, self.submit_callback)
-        self.entry_frame.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsw")
+        self.entry_frame.grid(row=2, column=0, padx=10, pady=(10, 0), sticky="nsw")
 
         self.search_frame = MySearchBox(self, self.search_callback)
-        self.search_frame.grid(row=0, column=3, padx=10, pady=(10, 0), sticky="nse")
+        self.search_frame.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsw")
+
+        self.scrollable_results_frame = ScrollableResultsFrame(self)
+        self.scrollable_results_frame.grid(row=0, column=1, padx=10, pady=(10, 0), sticky="ns")
 
     def submit_callback(self):
         title = self.entry_frame.entry_title.get()
@@ -80,6 +106,7 @@ class App(customtkinter.CTk):
         self.entry_frame.entry_url.delete(0, tk.END)
         self.entry_frame.entry_tags.delete(0, tk.END)
 
+
     def search_callback(self):
         tags = self.search_frame.search.get()
 
@@ -88,15 +115,10 @@ class App(customtkinter.CTk):
 
         result = cursor.fetchall()
 
-        for row in result:
-            title, url, _, _ = row
-            button = customtkinter.CTkButton(self, text=title, command=lambda u=url: self.open_url(u))
-            button.grid(column=2, row=result.index(row), padx=10, pady=10, sticky="ew")
+        self.scrollable_results_frame.display_results(result)  # Populate the scrollable frame with search results
 
         conn.close()
 
-    def open_url(self, url):
-        webbrowser.open(url)
 
 app = App()
 app.mainloop()
