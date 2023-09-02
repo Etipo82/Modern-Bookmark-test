@@ -54,7 +54,7 @@ class ScrollableResultsFrame(customtkinter.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
-        #self.grid_columnconfigure(0, weight=1)  # Make the inner frame expand with scrolling
+        self.grid_rowconfigure(2, weight=1)  # Make the inner frame expand with scrolling
 
     def display_results(self, result):
         # Clear any existing widgets
@@ -76,20 +76,22 @@ class App(customtkinter.CTk):
         super().__init__()
 
         self.title("Bookmark DB")
-        self.geometry("500x350")
-        self.grid_columnconfigure(0, weight=1)
-        #self.grid_columnconfigure(2, weight=1)
-        #self.grid_columnconfigure(3, weight=1)
-        self.grid_rowconfigure(0, weight=1)
+        self.geometry("600x350")
 
-        self.entry_frame = MyEntryFrame(self, self.submit_callback)
-        self.entry_frame.grid(row=2, column=0, padx=10, pady=(10, 0), sticky="nsw")
+        self.grid_columnconfigure(0, weight=0)  # Left column (search_frame)
+        self.grid_columnconfigure(1, weight=1)  # Right column (scrollable_results_frame)
+        self.grid_rowconfigure(0, weight=0)     # Top row (search_frame)
+        self.grid_rowconfigure(1, weight=1)     # Middle row (scrollable_results_frame)
+        self.grid_rowconfigure(2, weight=0)     # Bottom row (entry_frame)
 
         self.search_frame = MySearchBox(self, self.search_callback)
         self.search_frame.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsw")
 
         self.scrollable_results_frame = ScrollableResultsFrame(self)
-        self.scrollable_results_frame.grid(row=0, column=1, padx=10, pady=(10, 0), sticky="ns")
+        self.scrollable_results_frame.grid(row=0, column=1, rowspan=3, padx=10, pady=10, sticky="nswe")
+
+        self.entry_frame = MyEntryFrame(self, self.submit_callback)
+        self.entry_frame.grid(row=2, column=0, padx=10, pady=(10, 0), sticky="nsw")
 
     def submit_callback(self):
         title = self.entry_frame.entry_title.get()
