@@ -87,6 +87,10 @@ class App(customtkinter.CTk):
         self.search_frame = MySearchBox(self, self.search_callback)
         self.search_frame.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsw")
 
+        # Add an additional button for random search
+        self.random_search_button = customtkinter.CTkButton(self, text="Random Search", command=self.random_search)
+        self.random_search_button.grid(row=1, column=0, padx=10, pady=10, sticky="nsw")
+
         self.scrollable_results_frame = ScrollableResultsFrame(self)
         self.scrollable_results_frame.grid(row=0, column=1, rowspan=3, padx=10, pady=10, sticky="nswe")
 
@@ -120,6 +124,11 @@ class App(customtkinter.CTk):
         self.scrollable_results_frame.display_results(result)  # Populate the scrollable frame with search results
 
         conn.close()
+    
+    def random_search(self):
+        # Perform a random search and open it in the web browser
+        random_search_url = "https://www.bing.com/search?q=random"
+        webbrowser.open(random_search_url)
 
 
 app = App()
